@@ -1,5 +1,9 @@
 package com.tec.api.park.controller;
 
+import com.tec.api.park.dto.UsuarioCreatedDto;
+import com.tec.api.park.dto.UsuarioResponseDto;
+import com.tec.api.park.dto.UsuarioSenhaDto;
+import com.tec.api.park.dto.mapper.UsuarioMapper;
 import com.tec.api.park.entity.Usuario;
 import com.tec.api.park.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -17,30 +21,31 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @PostMapping
-    public ResponseEntity<Usuario> create(@RequestBody Usuario usuario) {
-        Usuario user = usuarioService.salvar(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    public ResponseEntity<UsuarioResponseDto> create(@RequestBody UsuarioCreatedDto dto) {
+        Usuario user = usuarioService.salvar(UsuarioMapper.toUsuario(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioMapper.toDto(user));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> getByid(@PathVariable Long id) {
+    public ResponseEntity<UsuarioResponseDto> getByid(@PathVariable Long id) {
         Usuario user = usuarioService.findById(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(UsuarioMapper.toDto(user));
     }
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> findAll(){
-        return ResponseEntity.ok(usuarioService.findAll());
+    public ResponseEntity<List<UsuarioResponseDto>> findAll() {
+        List<Usuario> list = usuarioService.findAll();
+        return ResponseEntity.ok(UsuarioMapper.listToDto(list));
     }
 
-//    @PatchMapping("/{id}")
+    //    @PatchMapping("/{id}")
 //    public ResponseEntity<Usuario> updatePassword(@PathVariable Long id,@RequestBody Usuario usuario){
 //        Usuario user = usuarioService.updateSenha(id, usuario);
 //        return ResponseEntity.ok(user);
 //    }
     @PatchMapping("/{id}")
-    public ResponseEntity<Usuario> atualizarSenha(@PathVariable Long id,@RequestBody Usuario usuario){
-        Usuario user = usuarioService.updateSenhaV2(id, usuario.getPassword());
-        return ResponseEntity.ok(user);
+    public ResponseEntity<Void> atualizarSenha(@PathVariable Long id, @RequestBody UsuarioSenhaDto dto) {
+        Usuario user = usuarioService.editarSenha(id, dto.getSenhaAtual(), dto.getNovaSenha(), dto.getConfirmaSenha());
+        return ResponseEntity.noContent().build();
     }
 }
